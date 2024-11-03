@@ -1,0 +1,83 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-8" x-data="revisePrompt()">
+    <h1 class="text-4xl font-bold mb-8">Revise Prompt</h1>
+
+    <div class="card bg-base-100 shadow-xl mb-8">
+        <div class="card-body">
+            <h2 class="card-title text-2xl mb-4">Conversation History</h2>
+            {% include 'components/conversation_history.html' %}
+        </div>
+    </div>
+
+    <div class="card bg-base-100 shadow-xl mb-8">
+        <div class="card-body">
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="card-title text-2xl">Highest Ranked Prompt</h2>
+                <button @click="copyToClipboard" class="btn btn-outline btn-sm">
+                    <i class="bx bx-copy mr-2"></i> Copy
+                </button>
+            </div>
+            <div class="prose" x-html="highestRankedPrompt"></div>
+        </div>
+    </div>
+
+    <div class="card bg-base-100 shadow-xl mb-8">
+        <div class="card-body">
+            <h2 class="card-title text-2xl mb-4">Revise Prompt</h2>
+            <textarea x-model="revisedPrompt" class="textarea textarea-bordered w-full" rows="5"></textarea>
+            <div class="card-actions justify-end mt-4">
+                <button @click="submitRevision" class="btn btn-primary">Submit Revision</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function revisePrompt() {
+    return {
+        taskId: {{ task.id }},
+        highestRankedPromptRaw: {{ highest_ranked_prompt.prompt_text | tojson | safe }},
+        highestRankedPrompt: {{ highest_ranked_prompt.prompt_text | markdown | tojson | safe }},
+        revisedPrompt: {{ highest_ranked_prompt.prompt_text | tojson | safe }},
+        copyToClipboard() {
+            navigator.clipboard.writeText(this.highestRankedPromptRaw).then(() => {
+                alert('Prompt copied to clipboard!');
+            }).catch(err => {
+                console.error('Failed to copy text: ', err);
+            });
+        },
+        submitRevision() {
+            fetch(`/tasks/submit_revision/${this.taskId}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': '{{ csrf_token() }}'
+                },
+                body: JSON.stringify({ revised_prompt: this.revisedPrompt })
+            })
+            .then(response => {
+                if (!response.ok) {
+                    return response.text().then(text => {
+                        throw new Error(`HTTP error! status: ${response.status}, body: ${text}`);
+                    });
+                }
+                return response.json();
+            })
+            .then(data => {
+                if (data.status === 'success') {
+                    window.location.href = '/tasks/user_conversations';
+                } else {
+                    alert('Error submitting revision: ' + data.message);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('An error occurred while submitting the revision: ' + error.message);
+            });
+        }
+    }
+}
+</script>
+{% endblock %}

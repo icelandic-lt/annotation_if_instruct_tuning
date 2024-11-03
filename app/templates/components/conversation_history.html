@@ -1,0 +1,9 @@
+<div class="h-64 overflow-y-auto border border-gray-200 rounded-lg p-4">
+    {% for message in conversation_history %}
+        <div class="chat {% if loop.index0 % 2 == 0 %}chat-end{% else %}chat-start{% endif %} mb-2">
+            <div class="chat-bubble {% if loop.index0 % 2 == 0 %}chat-bubble-primary{% else %}chat-bubble-secondary{% endif %}">
+                {{ message.content | markdown | safe }}
+            </div>
+        </div>
+    {% endfor %}
+</div>

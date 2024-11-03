@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-8">
+    <h1 class="text-4xl font-bold mb-8">Evaluation Tasks</h1>
+
+    {% set binary_tasks = ['pii', 'spam', 'appropriate', 'hate_speech', 'sexual_content', 'child_friendly', 'bias', 'sarcasm'] %}
+    {% set scale_tasks = ['quality_score', 'seriousness', 'creativity', 'politeness', 'safety', 'friendliness', 'difficulty'] %}
+    {% set string_tasks = ['topic_tags'] %}
+
+    <div class="space-y-8">
+        <!-- Binary Tasks -->
+        <div class="bg-white shadow-lg rounded-lg p-6">
+            <h2 class="text-2xl font-semibold mb-4">Binary Evaluations</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {% for task_type, total, completed in task_counts if task_type in binary_tasks %}
+                    {% include 'components/evaluation_task_card.html' %}
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- Scale Tasks -->
+        <div class="bg-white shadow-lg rounded-lg p-6">
+            <h2 class="text-2xl font-semibold mb-4">Scale Evaluations</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {% for task_type, total, completed in task_counts if task_type in scale_tasks %}
+                    {% include 'components/evaluation_task_card.html' %}
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- String Tasks -->
+        <div class="bg-white shadow-lg rounded-lg p-6">
+            <h2 class="text-2xl font-semibold mb-4">Text Input Evaluations</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {% for task_type, total, completed in task_counts if task_type in string_tasks %}
+                    {% include 'components/evaluation_task_card.html' %}
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

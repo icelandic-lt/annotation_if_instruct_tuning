@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mx-auto mt-8">
+    <h1 class="text-3xl font-bold mb-6">User Profile</h1>
+    <div class="card bg-base-100 shadow-xl">
+        <div class="card-body">
+            <h2 class="card-title mb-4">Edit Profile</h2>
+            <form method="POST" action="{{ url_for('main.profile') }}">
+                {{ form.hidden_tag() }}
+                <div class="form-control">
+                    <label class="label" for="{{ form.username.id }}">
+                        <span class="label-text">Username</span>
+                    </label>
+                    {{ form.username(class="input input-bordered w-full") }}
+                </div>
+                <div class="form-control mt-4">
+                    <label class="label" for="{{ form.preferred_language.id }}">
+                        <span class="label-text">Preferred Working Language</span>
+                    </label>
+                    {{ form.preferred_language(class="select select-bordered w-full") }}
+                </div>
+                <div class="form-control mt-4">
+                    <label class="label" for="{{ form.interface_language.id }}">
+                        <span class="label-text">Interface Language</span>
+                    </label>
+                    {{ form.interface_language(class="select select-bordered w-full") }}
+                </div>
+                <div class="form-control mt-6">
+                    {{ form.submit(class="btn btn-primary") }}
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

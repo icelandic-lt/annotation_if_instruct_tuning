@@ -1,0 +1,97 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-8">
+    <h1 class="text-4xl font-bold mb-2">Welcome, {{ current_user.username }}</h1>
+    <p class="text-xl text-gray-600 mb-8">Help us improve AI responses in {{ current_user.preferred_language }}</p>
+
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-12">
+        <div class="card bg-white shadow-lg hover:shadow-xl transition-shadow duration-300">
+            <div class="card-body">
+                <div class="flex items-center mb-4">
+                    <i class='bx bx-conversation text-4xl text-primary mr-3'></i>
+                    <h2 class="card-title text-2xl">Improve AI Conversations</h2>
+                </div>
+                <p class="text-gray-600 mb-4">Help improve AI conversations by ranking responses and extending dialogues with your own contributions.</p>
+                <div class="card-actions justify-between items-center">
+                    <a href="{{ url_for('tasks.conversation_task') }}" class="btn btn-outline">
+                        Start New Conversation
+                        <i class='bx bx-plus ml-2'></i>
+                    </a>
+                    <a href="{{ url_for('tasks.user_conversations') }}" class="btn btn-primary">
+                        View Conversations
+                        <i class='bx bx-right-arrow-alt ml-2'></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <div class="card bg-white shadow-lg hover:shadow-xl transition-shadow duration-300">
+            <div class="card-body">
+                <div class="flex items-center mb-4">
+                    <i class='bx bx-check-square text-4xl text-primary mr-3'></i>
+                    <h2 class="card-title text-2xl">Evaluate</h2>
+                </div>
+                <p class="text-gray-600 mb-4">Help assess the quality of AI responses by evaluating them based on specific criteria.</p>
+                <div class="card-actions justify-end">
+                    <a href="{{ url_for('tasks.evaluation_tasks') }}" class="btn btn-primary">
+                        Start Evaluating
+                        <i class='bx bx-right-arrow-alt ml-2'></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <h2 class="text-2xl font-bold mb-4">Your Progress</h2>
+    <div class="grid grid-cols-1 md:grid-cols-2 2xl:grid-cols-4 gap-6">
+        <div class="stat bg-white shadow rounded-lg p-6">
+            <div class="flex items-start justify-between h-full">
+                <div class="flex flex-col pr-4">
+                    <div class="stat-title text-gray-600 text-sm mb-2">Conversations Improved</div>
+                    <div class="stat-value text-3xl font-bold text-primary mt-auto">{{ prompts_ranked }}</div>
+                </div>
+                <div class="stat-figure text-primary flex-shrink-0">
+                    <i class='bx bx-conversation text-5xl'></i>
+                </div>
+            </div>
+        </div>
+        
+        <div class="stat bg-white shadow rounded-lg p-6">
+            <div class="flex items-start justify-between h-full">
+                <div class="flex flex-col pr-4">
+                    <div class="stat-title text-gray-600 text-sm mb-2">Evaluations Performed</div>
+                    <div class="stat-value text-3xl font-bold text-primary mt-auto">{{ evaluations_performed }}</div>
+                </div>
+                <div class="stat-figure text-primary flex-shrink-0">
+                    <i class='bx bx-check-square text-5xl'></i>
+                </div>
+            </div>
+        </div>
+        
+        <div class="stat bg-white shadow rounded-lg p-6">
+            <div class="flex items-start justify-between h-full">
+                <div class="flex flex-col pr-4">
+                    <div class="stat-title text-gray-600 text-sm mb-2">Conversations Started</div>
+                    <div class="stat-value text-3xl font-bold text-primary mt-auto">{{ conversations_count }}</div>
+                </div>
+                <div class="stat-figure text-primary flex-shrink-0">
+                    <i class='bx bx-plus-circle text-5xl'></i>
+                </div>
+            </div>
+        </div>
+        
+        <div class="stat bg-white shadow rounded-lg p-6">
+            <div class="flex items-start justify-between h-full">
+                <div class="flex flex-col pr-4">
+                    <div class="stat-title text-gray-600 text-sm mb-2">Your Rank</div>
+                    <div class="stat-value text-3xl font-bold text-primary mt-auto">#{{ user_rank }}</div>
+                </div>
+                <div class="stat-figure text-primary flex-shrink-0">
+                    <i class='bx bx-trophy text-5xl'></i>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="hero min-h-screen bg-base-200">
+    <div class="hero-content text-center">
+        <div class="max-w-md">
+            <h1 class="text-5xl font-bold">Welcome to Prompt Evaluation</h1>
+            <p class="py-6">Join us in improving AI prompts and responses across multiple languages.</p>
+            <a href="{{ url_for('auth.register') }}" class="btn btn-primary">
+                Get Started
+                <i class='bx bx-right-arrow-alt ml-2'></i>
+            </a>
+        </div>
+    </div>
+</div>
+
+<div class="container mx-auto px-4 py-16">
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+        <div class="card bg-base-100 shadow-xl">
+            <div class="card-body items-center text-center">
+                <i class='bx bx-bulb text-6xl text-primary'></i>
+                <h2 class="card-title">Evaluate Prompts</h2>
+                <p>Help improve AI prompts by evaluating and refining them.</p>
+            </div>
+        </div>
+        <div class="card bg-base-100 shadow-xl">
+            <div class="card-body items-center text-center">
+                <i class='bx bx-message-square-detail text-6xl text-primary'></i>
+                <h2 class="card-title">Assess Responses</h2>
+                <p>Rate AI-generated responses and provide valuable feedback.</p>
+            </div>
+        </div>
+        <div class="card bg-base-100 shadow-xl">
+            <div class="card-body items-center text-center">
+                <i class='bx bx-globe text-6xl text-primary'></i>
+                <h2 class="card-title">Multilingual Support</h2>
+                <p>Work with prompts and responses in various languages.</p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

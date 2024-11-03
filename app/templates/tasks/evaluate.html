@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-8">
+    <h1 class="text-4xl font-bold mb-8">Evaluate {{ task.task_type|replace('_', ' ')|title }}</h1>
+
+    {% include 'components/conversation_history.html' %}
+
+    <form action="{{ url_for('tasks.submit_evaluation', task_id=task.id) }}" method="post" class="mt-8">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+
+        {% if task.task_type in ['pii', 'spam', 'appropriate', 'hate_speech', 'sexual_content', 'child_friendly', 'bias', 'sarcasm'] %}
+            <div class="flex justify-center space-x-4">
+                <button type="submit" name="value" value="0" class="btn btn-primary btn-lg">
+                    Does not contain {{ task.task_type|replace('_', ' ')|title }}
+                </button>
+                <button type="submit" name="value" value="1" class="btn btn-secondary btn-lg">
+                    Contains {{ task.task_type|replace('_', ' ')|title }}
+                </button>
+            </div>
+        {% elif task.task_type in ['quality_score', 'seriousness', 'creativity', 'politeness', 'safety', 'friendliness', 'difficulty'] %}
+            <div class="form-control">
+                <label class="label">
+                    <span class="label-text">Rate from 1 to 5:</span>
+                </label>
+                <input type="range" min="1" max="5" name="value" class="range range-primary" step="1">
+                <div class="w-full flex justify-between text-xs px-2">
+                    <span>1</span>
+                    <span>2</span>
+                    <span>3</span>
+                    <span>4</span>
+                    <span>5</span>
+                </div>
+            </div>
+            <button type="submit" class="btn btn-primary mt-4">Submit Evaluation</button>
+        {% elif task.task_type == 'topic_tags' %}
+            <div class="form-control">
+                <label class="label">
+                    <span class="label-text">Enter topic tags (comma-separated):</span>
+                </label>
+                <input type="text" name="value" class="input input-bordered w-full" placeholder="Enter tags">
+            </div>
+            <button type="submit" class="btn btn-primary mt-4">Submit Evaluation</button>
+        {% endif %}
+    </form>
+</div>
+{% endblock %}

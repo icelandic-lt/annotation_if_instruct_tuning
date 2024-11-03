@@ -1,0 +1,164 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mx-auto mt-8" x-data="responseEvaluation()">
+    <h1 class="text-3xl font-bold mb-6">Response Evaluation</h1>
+
+    <!-- Prompt -->
+    <div class="card bg-base-100 shadow-xl mb-6">
+        <div class="card-body">
+            <h2 class="card-title">Prompt</h2>
+            <p x-text="prompt"></p>
+        </div>
+    </div>
+
+    <!-- Responses -->
+    <div class="mb-6">
+        <h2 class="text-2xl font-bold mb-4">Rank the Responses</h2>
+        <div class="space-y-2" x-init="initSortable()">
+            <template x-for="response in responses" :key="response.id">
+                <div class="card bg-base-100 shadow-xl cursor-move" x-data data-id="">
+                    <div class="card-body">
+                        <h3 class="card-title" x-text="`Response ${response.rank}`"></h3>
+                        <p x-text="response.text"></p>
+                        <div class="card-actions justify-end">
+                            <span x-text="response.retrieval ? 'With Retrieval' : 'Without Retrieval'" class="badge badge-outline"></span>
+                            <button class="btn btn-sm btn-outline" @click="flagForConversation(response.id)">Flag for Conversation</button>
+                        </div>
+                    </div>
+                </div>
+            </template>
+        </div>
+    </div>
+
+    <!-- Evaluate Best Response -->
+    <div class="mt-8">
+        <h2 class="text-2xl font-bold mb-4">Evaluate Best Response</h2>
+
+        <!-- Likert Scale Evaluations -->
+        <div class="space-y-4">
+            <template x-for="(question, index) in likertQuestions" :key="index">
+                <div class="form-control">
+                    <label class="label">
+                        <span class="label-text" x-text="question.label"></span>
+                    </label>
+                    <input type="range" min="1" max="5" x-model="question.value" class="range range-primary" step="1" />
+                    <div class="w-full flex justify-between text-xs px-2">
+                        <span>1</span>
+                        <span>2</span>
+                        <span>3</span>
+                        <span>4</span>
+                        <span>5</span>
+                    </div>
+                </div>
+            </template>
+        </div>
+
+        <!-- Binary Properties -->
+        <div class="space-y-2 mt-6">
+            <template x-for="(property, index) in binaryProperties" :key="index">
+                <label class="flex items-center">
+                    <input type="checkbox" class="checkbox checkbox-primary" x-model="property.value">
+                    <span class="ml-2" x-text="property.label"></span>
+                </label>
+            </template>
+        </div>
+
+        <!-- Improve Best Response -->
+        <div class="mt-6">
+            <h3 class="text-xl font-bold mb-2">Improve Best Response</h3>
+            <textarea class="textarea textarea-bordered w-full" rows="5" x-model="improvedResponse"></textarea>
+        </div>
+
+        <button class="btn btn-primary mt-6" @click="submitEvaluation">Submit Evaluation</button>
+    </div>
+</div>
+
+<script>
+function responseEvaluation() {
+    return {
+        prompt: '',
+        responses: [],
+        improvedResponse: '',
+        likertQuestions: [
+            { label: 'Quality Score (Low to High)', value: 3 },
+            { label: 'Seriousness (Serious to Humorous)', value: 3 },
+            { label: 'Creativity (Ordinary to Creative)', value: 3 },
+            { label: 'Politeness (Rude to Polite)', value: 3 },
+            { label: 'Safety (Violent to Harmless)', value: 3 },
+            { label: 'Friendliness (Unfriendly to Friendly)', value: 3 },
+        ],
+        binaryProperties: [
+            { label: 'Contains PII (Personally Identifiable Information)', value: false },
+            { label: 'Is Spam', value: false },
+            { label: 'Not Appropriate', value: false },
+            { label: 'Hate Speech', value: false },
+            { label: 'Sexual Content', value: false },
+            { label: 'Not Appropriate for Children', value: false },
+            { label: 'Contains Bias', value: false },
+            { label: 'Contains Sarcasm', value: false },
+        ],
+        init() {
+            fetch('{{ url_for("tasks.get_responses") }}')
+                .then(response => response.json())
+                .then(data => {
+                    this.prompt = data.prompt;
+                    this.responses = data.responses.map((resp, index) => {
+                        return { ...resp, rank: index + 1 };
+                    });
+                });
+        },
+        initSortable() {
+            // Initialize sortable functionality using htmx or a library like Sortable.js
+            // For example:
+            new Sortable(document.querySelector('.space-y-2'), {
+                animation: 150,
+                onEnd: (evt) => {
+                    // Update response rankings
+                    this.responses.splice(evt.newIndex, 0, this.responses.splice(evt.oldIndex, 1)[0]);
+                },
+            });
+        },
+        flagForConversation(responseId) {
+            fetch(`{{ url_for("tasks.flag_for_conversation", response_id=0) }}`.replace('0', responseId), {
+                method: 'POST',
+                headers: { 'X-CSRFToken': '{{ csrf_token() }}' },
+            }).then(response => {
+                if (response.ok) {
+                    alert('Response flagged for extended conversation.');
+                } else {
+                    alert('An error occurred.');
+                }
+            });
+        },
+        submitEvaluation() {
+            const payload = {
+                response_id: this.responses[0].id, // Best response
+                improved_response: this.improvedResponse,
+                evaluation: {
+                    quality_score: this.likertQuestions[0].value,
+                    serious_humorous: this.likertQuestions[1].value,
+                    // ... collect other evaluation data ...
+                },
+                binary_properties: {
+                    contains_pii: this.binaryProperties[0].value,
+                    // ... collect other binary properties ...
+                },
+            };
+            fetch('{{ url_for("tasks.submit_evaluation") }}', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'X-CSRFToken': '{{ csrf_token() }}' },
+                body: JSON.stringify(payload),
+            }).then(response => {
+                if (response.ok) {
+                    alert('Evaluation submitted successfully!');
+                    this.init();
+                } else {
+                    alert('An error occurred. Please try again.');
+                }
+            });
+        },
+    };
+}
+</script>
+{% endblock %}

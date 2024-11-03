@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-8">
+    <h1 class="text-4xl font-bold mb-8">Leaderboard</h1>
+
+    {% if leaderboard %}
+        <div class="overflow-x-auto">
+            <table class="table w-full">
+                <thead>
+                    <tr>
+                        <th>Rank</th>
+                        <th>User</th>
+                        <th>Prompts Evaluated</th>
+                        <th>Responses Assessed</th>
+                        <th>Total Score</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for user in leaderboard %}
+                    <tr class="{{ 'bg-base-200' if user.username == current_user.username else '' }}">
+                        <td>
+                            {% if loop.index == 1 %}
+                                <i class='bx bxs-crown text-yellow-400' title="1st Place"></i>
+                            {% elif loop.index == 2 %}
+                                <i class='bx bxs-crown text-gray-400' title="2nd Place"></i>
+                            {% elif loop.index == 3 %}
+                                <i class='bx bxs-crown text-yellow-600' title="3rd Place"></i>
+                            {% else %}
+                                {{ loop.index }}
+                            {% endif %}
+                        </td>
+                        <td>
+                            <div class="flex items-center space-x-3">
+                                <i class='bx bxs-user-circle text-2xl'></i>
+                                <div>
+                                    <div class="font-bold">{{ user.username }}</div>
+                                    <div class="text-sm opacity-50">Joined {{ user.joined_date }}</div>
+                                </div>
+                            </div>
+                        </td>
+                        <td>
+                            <i class='bx bx-bulb'></i> {{ user.prompts_evaluated or 0 }}
+                        </td>
+                        <td>
+                            <i class='bx bx-message-square-detail'></i> {{ user.responses_assessed or 0 }}
+                        </td>
+                        <td>
+                            <i class='bx bx-star'></i> {{ user.total_score or 0 }}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% else %}
+        <div class="alert alert-info">
+            <div>
+                <i class='bx bx-info-circle'></i>
+                <span>No user activity recorded yet. Start evaluating prompts and responses to appear on the leaderboard!</span>
+            </div>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

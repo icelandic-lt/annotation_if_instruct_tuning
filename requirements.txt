@@ -1,0 +1,11 @@
+Flask
+Flask-SQLAlchemy
+Flask-Migrate
+Flask-Login
+Flask-WTF
+email_validator
+python-dotenv
+together
+markdown
+gunicorn
+psycopg2-binary  # For PostgreSQL support

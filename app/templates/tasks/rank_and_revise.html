@@ -1,0 +1,107 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-8" x-data="rankAndRevise()">
+    <h1 class="text-4xl font-bold mb-6">Rank Prompts</h1>
+
+    <div class="card bg-base-100 shadow-xl mb-8">
+        <div class="card-body">
+            <h2 class="card-title text-2xl mb-4">Conversation History</h2>
+            {% include 'components/conversation_history.html' %}
+        </div>
+    </div>
+
+    <div class="mb-8">
+        <h2 class="text-2xl font-bold mb-4">Drag to Rank Prompts</h2>
+        <p class="text-gray-600 mb-6">Drag and drop the prompts below to rank them from best to worst.</p>
+        <div class="space-y-6" id="promptList">
+            <template x-for="(prompt, index) in prompts" :key="prompt.id">
+                <div class="card bg-base-100 shadow-xl cursor-move transition-all duration-300 hover:shadow-2xl" 
+                     :class="getBorderColor(index)"
+                     :data-id="prompt.id">
+                    <div class="card-body">
+                        <h3 class="card-title text-xl mb-2" x-text="`Prompt ${index + 1}`"></h3>
+                        <div class="prose mb-4" x-html="prompt.text"></div>
+                        <div x-show="prompt.postfix" class="bg-gray-100 p-3 rounded-lg mt-2">
+                            <p class="text-sm text-gray-700"><strong>Postfix:</strong> <span x-text="prompt.postfix"></span></p>
+                        </div>
+                    </div>
+                </div>
+            </template>
+        </div>
+    </div>
+
+    <div class="flex justify-end mt-8">
+        <button @click="submitRanking" class="btn btn-primary btn-lg">Submit Ranking</button>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/sortablejs@1.14.0/Sortable.min.js"></script>
+<script>
+function rankAndRevise() {
+    return {
+        taskId: {{ task.id }},
+        prompts: [
+            {% for prompt in prompts %}
+            {
+                id: {{ prompt.id }},
+                text: {{ prompt.prompt_text | markdown | tojson | safe }},
+                postfix: {{ prompt.postfix | tojson | safe }}
+            },
+            {% endfor %}
+        ],
+        init() {
+            new Sortable(document.getElementById('promptList'), {
+                animation: 150,
+                ghostClass: 'bg-gray-100'
+            });
+        },
+        getBorderColor(index) {
+            const colors = [
+                'border-l-8 border-blue-500',
+                'border-l-8 border-green-500',
+                'border-l-8 border-yellow-500',
+                'border-l-8 border-red-500',
+                'border-l-8 border-purple-500',
+                'border-l-8 border-pink-500',
+                'border-l-8 border-indigo-500',
+                'border-l-8 border-teal-500'
+            ];
+            return colors[index % colors.length];
+        },
+        submitRanking() {
+            const ranking = Array.from(document.querySelectorAll('#promptList > div'))
+                .map(el => parseInt(el.dataset.id));
+            
+            fetch(`/tasks/submit_ranking/${this.taskId}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': '{{ csrf_token() }}'
+                },
+                body: JSON.stringify({ ranking: ranking })
+            })
+            .then(response => {
+                if (!response.ok) {
+                    return response.text().then(text => {
+                        throw new Error(`HTTP error! status: ${response.status}, body: ${text}`);
+                    });
+                }
+                return response.json();
+            })
+            .then(data => {
+                if (data.status === 'success') {
+                    window.location.href = `/tasks/revise/${this.taskId}`;
+                } else {
+                    alert('Error submitting ranking: ' + data.message);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('An error occurred while submitting the ranking: ' + error.message);
+            });
+        }
+    }
+}
+</script>
+{% endblock %}

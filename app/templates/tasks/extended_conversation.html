@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mx-auto mt-8">
+  <h1 class="text-3xl font-bold mb-4">Extended Conversation</h1>
+  
+  <div class="space-y-4">
+    {% for response in conversation %}
+      <div class="card bg-base-100 shadow-xl">
+        <div class="card-body">
+          <h2 class="card-title">{% if response.response_type == 'user' %}User Response{% else %}AI Response{% endif %}</h2>
+          <p>{{ response.text }}</p>
+          <div class="card-actions justify-end">
+            <span class="badge badge-outline">{{ 'With Retrieval' if response.retrieval_used else 'Without Retrieval' }}</span>
+          </div>
+        </div>
+      </div>
+    {% endfor %}
+  </div>
+  
+  <form action="{{ url_for('tasks.extended_conversation', response_id=parent_id) }}" method="post" class="mt-8">
+    <h2 class="text-2xl font-bold mb-4">Add Your Response</h2>
+    <textarea name="user_response" class="textarea textarea-bordered w-full" rows="5" required></textarea>
+    <button type="submit" class="btn btn-primary mt-4">Submit Response</button>
+  </form>
+</div>
+{% endblock %}

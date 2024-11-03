@@ -1,0 +1,83 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mx-auto mt-8" x-data="promptEvaluation()">
+    <h1 class="text-3xl font-bold mb-6">Prompt Evaluation</h1>
+
+    <!-- Original Prompt -->
+    <div class="card bg-base-100 shadow-xl mb-6">
+        <div class="card-body">
+            <h2 class="card-title">Original Prompt (English)</h2>
+            <p x-text="originalPrompt"></p>
+        </div>
+    </div>
+
+    <!-- Synthetic Prompts -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <template x-for="(prompt, index) in syntheticPrompts" :key="index">
+            <div class="card bg-base-100 shadow-xl">
+                <div class="card-body">
+                    <h2 class="card-title" x-text="`Synthetic Prompt ${index + 1}`"></h2>
+                    <p x-text="prompt.text"></p>
+                    <div class="card-actions justify-end">
+                        <button class="btn btn-sm btn-primary" @click="selectPrompt(index)">Select</button>
+                    </div>
+                </div>
+            </div>
+        </template>
+    </div>
+
+    <!-- Improve Selected Prompt -->
+    <div class="mt-8" x-show="selectedPrompt !== null" x-transition>
+        <h2 class="text-2xl font-bold mb-4">Improve Selected Prompt</h2>
+        <textarea class="textarea textarea-bordered w-full" rows="5" x-model="improvedPrompt"></textarea>
+        <button class="btn btn-primary mt-4" @click="submitImprovedPrompt">Submit Improved Prompt</button>
+    </div>
+</div>
+
+<script>
+function promptEvaluation() {
+    return {
+        originalPrompt: '',
+        syntheticPrompts: [],
+        selectedPrompt: null,
+        improvedPrompt: '',
+        init() {
+            fetch('{{ url_for("tasks.get_prompt") }}')
+                .then(response => response.json())
+                .then(data => {
+                    this.originalPrompt = data.original_prompt;
+                    this.syntheticPrompts = data.synthetic_prompts.map((text, index) => ({ text, index }));
+                });
+        },
+        selectPrompt(index) {
+            this.selectedPrompt = index;
+            this.improvedPrompt = this.syntheticPrompts[index].text;
+        },
+        submitImprovedPrompt() {
+            // TODO: Implement submission logic
+            const payload = {
+                prompt_id: this.syntheticPrompts[this.selectedPrompt].id,
+                improved_prompt: this.improvedPrompt,
+            };
+            fetch('{{ url_for("tasks.submit_prompt_improvement") }}', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'X-CSRFToken': '{{ csrf_token() }}' },
+                body: JSON.stringify(payload),
+            }).then(response => {
+                if (response.ok) {
+                    alert('Improved prompt submitted successfully!');
+                    // Reset selections
+                    this.selectedPrompt = null;
+                    this.improvedPrompt = '';
+                    // Fetch new prompts
+                    this.init();
+                } else {
+                    alert('An error occurred. Please try again.');
+                }
+            });
+        }
+    };
+}
+</script>
+{% endblock %}

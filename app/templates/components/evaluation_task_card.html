@@ -1,0 +1,20 @@
+<div class="bg-base-100 shadow-md rounded-lg p-4 hover:shadow-xl transition-shadow duration-300">
+    <h3 class="text-lg font-semibold mb-2">{{ task_type|replace('_', ' ')|title }}</h3>
+    <div class="flex justify-between items-center mb-3">
+        <span class="text-sm text-gray-600">{{ completed }} / {{ total }} completed</span>
+        <span class="text-sm font-medium {{ 'text-green-600' if completed == total else 'text-blue-600' }}">
+            {{ (completed / total * 100)|round|int }}%
+        </span>
+    </div>
+    <div class="w-full bg-gray-200 rounded-full h-2.5 mb-4">
+        <div class="bg-blue-600 h-2.5 rounded-full" style="width: {{ (completed / total * 100)|round|int }}%"></div>
+    </div>
+    <a href="{{ url_for('tasks.evaluate', task_type=task_type) }}" 
+       class="btn btn-primary btn-sm w-full {{ 'btn-disabled' if completed == total }}">
+        {% if completed == total %}
+            Completed
+        {% else %}
+            Start Task
+        {% endif %}
+    </a>
+</div>

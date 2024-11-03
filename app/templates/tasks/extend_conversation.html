@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mx-auto mt-8">
+  <h1 class="text-3xl font-bold mb-4">Extended Conversation</h1>
+  
+  {% include 'components/conversation_history.html' %}
+  
+  <form action="{{ url_for('tasks.extend_conversation', prompt_id=prompt.id) }}" method="post" class="mt-8">
+    {{ form.hidden_tag() }}
+    <h2 class="text-2xl font-bold mb-4">Add Your Response</h2>
+    {{ form.user_prompt(class="textarea textarea-bordered w-full", rows="5", required=true) }}
+    <button type="submit" class="btn btn-primary mt-4">Submit Response</button>
+  </form>
+</div>
+{% endblock %}

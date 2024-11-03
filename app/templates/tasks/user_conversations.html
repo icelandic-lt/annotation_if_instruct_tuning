@@ -1,0 +1,165 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-8">
+    <div class="flex justify-between items-center mb-8">
+        <div>
+            <h1 class="text-4xl font-bold">Improve AI Conversations</h1>
+            <p class="text-gray-600 mt-2">Rank responses and extend conversations to help improve AI interactions</p>
+        </div>
+        <div class="flex gap-4">
+            <a href="{{ url_for('tasks.conversation_task') }}" class="btn btn-primary">
+                <i class='bx bx-plus mr-2'></i>
+                Start New Conversation
+            </a>
+            <div class="join">
+                <a href="{{ url_for('tasks.user_conversations', filter='mine') }}" 
+                   class="btn join-item {{ 'btn-active' if current_filter == 'mine' }}">My Conversations</a>
+                <a href="{{ url_for('tasks.user_conversations', filter='all') }}" 
+                   class="btn join-item {{ 'btn-active' if current_filter == 'all' }}">All Conversations</a>
+            </div>
+        </div>
+    </div>
+
+    {% if not conversations %}
+        <div class="alert alert-info">
+            <div>
+                <i class='bx bx-info-circle'></i>
+                <span>No conversations found. Start a new conversation to get started!</span>
+            </div>
+        </div>
+    {% endif %}
+
+    {% for conversation in conversations %}
+        <div class="card bg-base-100 shadow-xl mb-8">
+            <div class="card-body">
+                <div class="flex justify-between items-center mb-4">
+                    <div>
+                        <h2 class="card-title text-2xl">
+                            {% if conversation.is_extension %}
+                                Extended Conversation
+                                <span class="badge badge-accent">Extension</span>
+                            {% else %}
+                                Conversation {{ loop.index }}
+                            {% endif %}
+                        </h2>
+                        <div class="flex gap-2 mt-1">
+                            {% if conversation.is_author %}
+                                <span class="badge badge-primary">Author</span>
+                            {% endif %}
+                            {% if conversation.has_participated %}
+                                <span class="badge badge-secondary">Participant</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <span class="text-sm text-gray-500">{{ conversation.prompt.created_at.strftime('%Y-%m-%d %H:%M:%S') }}</span>
+                </div>
+
+                <div class="mb-4">
+                    <h3 class="text-lg font-semibold mb-2">Contributors:</h3>
+                    <div class="flex flex-wrap gap-2">
+                        {% for contributor in conversation.contributors %}
+                            <div class="badge badge-outline gap-2">
+                                <i class='bx bxs-user'></i>
+                                {{ contributor.username }}
+                                {% if contributor.id == conversation.root_prompt.revision_author_id %}
+                                    <span class="text-xs">(Original Author)</span>
+                                {% elif contributor.id == conversation.prompt.revision_author_id %}
+                                    <span class="text-xs">(Author)</span>
+                                {% endif %}
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                
+                {% with conversation_history=conversation.history %}
+                    {% include 'components/conversation_history.html' %}
+                {% endwith %}
+
+                {% if conversation.extensions %}
+                    <div class="mt-4">
+                        <h3 class="text-lg font-semibold mb-2">Extensions:</h3>
+                        <div class="flex flex-wrap gap-2">
+                            {% for extension in conversation.extensions %}
+                                <a href="{{ url_for('tasks.user_conversations', filter=current_filter, highlight=extension.id) }}" 
+                                   class="badge badge-accent badge-lg gap-2 cursor-pointer">
+                                    <i class='bx bx-git-branch'></i>
+                                    Extended by 
+                                    {% if extension.revision_author %}
+                                        {{ extension.revision_author.username }}
+                                    {% else %}
+                                        Unknown User
+                                    {% endif %}
+                                </a>
+                            {% endfor %}
+                        </div>
+                    </div>
+                {% endif %}
+
+                <div class="mt-4 flex flex-wrap gap-4">
+                    {% if conversation.responses_generated %}
+                        {% if not conversation.flagged_for_conversation %}
+                            {% if conversation.ranking_tasks %}
+                                <div class="w-full">
+                                    <h3 class="text-xl font-semibold mb-2">Ranking Tasks:</h3>
+                                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                        {% for task in conversation.ranking_tasks %}
+                                        <a href="{{ url_for('tasks.rank_and_revise', task_id=task.id) }}" 
+                                           class="btn btn-outline btn-primary {% if task.completed_at %}btn-disabled{% endif %}">
+                                            Task #{{ task.id }}
+                                            {% if task.completed_at %}
+                                                <span class="ml-2 badge badge-success">Completed</span>
+                                            {% else %}
+                                                <span class="ml-2 badge badge-info">Ready</span>
+                                            {% endif %}
+                                        </a>
+                                        {% endfor %}
+                                    </div>
+                                </div>
+                            {% endif %}
+                            {% if conversation.can_extend %}
+                                <a href="{{ url_for('tasks.extend_conversation', prompt_id=conversation.prompt.id) }}" 
+                                   class="btn btn-secondary">
+                                    <i class='bx bx-git-branch mr-2'></i>
+                                    Extend Conversation
+                                </a>
+                            {% endif %}
+                        {% else %}
+                            <div class="alert alert-success">
+                                <i class='bx bx-conversation'></i>
+                                <span>This conversation has been extended!</span>
+                            </div>
+                        {% endif %}
+                    {% elif not conversation.responses_generated %}
+                        {% if conversation.ready_for_extension %}
+                            <a href="{{ url_for('tasks.extend_conversation', prompt_id=conversation.prompt.id) }}" 
+                               class="btn btn-secondary">
+                                <i class='bx bx-git-branch mr-2'></i>
+                                Extend Conversation
+                            </a>
+                        {% elif not conversation.is_revision %}
+                            <div class="alert alert-info shadow-lg w-full">
+                                <div>
+                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" class="stroke-current flex-shrink-0 w-6 h-6"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                                    <span>Responses are being prepared...</span>
+                                </div>
+                            </div>
+                            {% if conversation.is_stuck and conversation.is_author %}
+                                <form action="{{ url_for('tasks.retry_response_generation', prompt_id=conversation.prompt.id) }}" method="POST" class="inline">
+                                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                                    <button type="submit" class="btn btn-warning {% if not conversation.retry_allowed %}btn-disabled{% endif %}">
+                                        Retry Response Generation
+                                    </button>
+                                </form>
+                                {% if not conversation.retry_allowed %}
+                                    <p class="text-sm text-gray-500 mt-2">Retry will be available in 5 minutes.</p>
+                                {% endif %}
+                            {% endif %}
+                        {% endif %}
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    {% endfor %}
+</div>
+{% endblock %}

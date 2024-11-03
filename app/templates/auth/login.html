@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="flex justify-center items-center min-h-screen bg-base-200">
+    <div class="card w-full max-w-sm shadow-2xl bg-base-100">
+        <div class="card-body">
+            <h2 class="card-title text-center text-2xl font-bold mb-6">Login</h2>
+            <form method="POST" action="{{ url_for('auth.login') }}">
+                {{ form.hidden_tag() }}
+                <div class="form-control">
+                    <label class="label" for="{{ form.username.id }}">
+                        <span class="label-text">Username</span>
+                    </label>
+                    {{ form.username(class="input input-bordered w-full", placeholder="Enter your username") }}
+                </div>
+                <div class="form-control mt-4">
+                    <label class="label" for="{{ form.password.id }}">
+                        <span class="label-text">Password</span>
+                    </label>
+                    {{ form.password(class="input input-bordered w-full", placeholder="Enter your password") }}
+                </div>
+                <div class="form-control mt-4">
+                    <label class="cursor-pointer label justify-start">
+                        {{ form.remember_me(class="checkbox checkbox-primary mr-2") }}
+                        <span class="label-text">Remember Me</span>
+                    </label>
+                </div>
+                <div class="form-control mt-6">
+                    {{ form.submit(class="btn btn-primary w-full") }}
+                </div>
+            </form>
+            <div class="text-center mt-4">
+                <p>Don't have an account? <a href="{{ url_for('auth.register') }}" class="link link-primary">Register</a></p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
