@@ -81,6 +81,7 @@ This web application is designed for rating, ranking, and improving prompts and 
    ```
    heroku config:set FLASK_APP=wsgi.py
    heroku config:set SECRET_KEY=your-secret-key
+   heroku config:set TOGETHER_API_KEY=your-together-api-key
    ```
 
 6. Deploy the application:
