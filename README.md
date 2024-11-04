@@ -86,7 +86,7 @@ This web application is designed for rating, ranking, and improving prompts and 
 
 6. Deploy the application:
    ```
-   git push heroku main
+   git push heroku master
    ```
 
 7. Run database migrations:
